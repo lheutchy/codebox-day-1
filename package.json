@@ -1,11 +1,13 @@
 {
   "name": "codebox-day-1",
   "version": "1.0.0",
-  "description": "CodeBox bootcamp Day 2 Express API exercises",
+  "description": "Recipe Box web app for CodeBox Bootcamp Day 3",
   "main": "server.js",
   "scripts": {
     "test": "node --test",
+    "smoke": "node scripts/smoke.js",
     "dev": "node server.js",
+    "start": "node server.js",
     "token": "node scripts/token.js"
   },
   "repository": {
@@ -20,8 +22,12 @@
   },
   "homepage": "https://github.com/lheutchy/codebox-day-1#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^18.0.4",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3"
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.7.0"
   }
 }
