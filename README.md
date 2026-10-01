@@ -1,37 +1,48 @@
-# CodeBox Day 2: Express API
+# Recipe Box
 
-This project keeps the Day 1 script in `src/` and adds the Day 2 Node.js API exercises. The user data is temporary and resets whenever the server restarts. No frontend or database connection is needed for these exercises.
+A personal recipe collection built for CodeBox Bootcamp Day 3. Create an account, save recipes, search by title or ingredient, and edit or delete your own recipes. Accounts and recipes persist in MongoDB Atlas. The earlier Day 1 script and Day 2 API examples remain in the repo.
 
-## Set up
+## Run locally
 
-1. Run `npm install`.
+1. Install Node.js 20.19 or newer and run `npm install`.
 2. Copy `.env.example` to `.env`.
-3. Replace `JWT_SECRET` in `.env` with a long, random secret. For example, run `node -e 'console.log(require("crypto").randomBytes(48).toString("hex"))'` locally and paste its output into `.env`.
-4. Add your MongoDB Atlas connection string as `MONGODB_URI` in `.env` when you have one. The take home task asks for credentials, but this lesson's API still uses the in-memory sample users.
-5. Run `npm run dev` and open <http://localhost:3000/>.
+3. Set `MONGODB_URI` to your Atlas connection string. Include the database user's credentials and allow your current IP address in Atlas Network Access.
+4. Set `JWT_SECRET` to a long random value. You can generate one locally with `node -e 'console.log(require("node:crypto").randomBytes(48).toString("hex"))'`.
+5. Keep `MONGODB_DB=codebox_recipe_box` or choose a database name.
+6. Run `npm run dev` and open <http://localhost:3000/>.
 
-The local `.env` and `node_modules/` are ignored by Git. `.env.example` shows the required keys without real credentials. Run `git status` before pushing.
+Use **Create account** on the site, then add a recipe. Enter one ingredient per line. Your account's recipes remain after a reload or server restart. `.env` is ignored by Git; never commit connection strings or JWT secrets.
 
-## Routes and curl checks
+## Check it
 
-| Request | Expected result |
+- `npm test` checks the Day 2 API, unauthenticated access, and input validation without changing Atlas data.
+- `npm run smoke` creates disposable accounts and a recipe in Atlas, checks sign-in, CRUD, and cross-account isolation, then removes the test data.
+- In the browser, create an account; add, find, open, edit, and delete a recipe; reload to confirm persistence; sign out and back in.
+
+## App API
+
+The browser uses an HTTP-only session cookie. JSON errors have an `error` field.
+
+| Method and path | Purpose |
 | --- | --- |
-| `curl -i http://localhost:3000/` | 200, `Hello from CodeBox!` |
-| `curl -i http://localhost:3000/api/users` | 200, JSON array with Alex and Sam |
-| `curl -i http://localhost:3000/api/users/1` | 200, JSON for Alex |
-| `curl -i http://localhost:3000/api/users/999` | 404, JSON error |
-| `curl -i http://localhost:3000/api/me` | 401, JSON error |
+| `POST /api/auth/register` | Create an account with `email` and `password` |
+| `POST /api/auth/login` | Sign in |
+| `POST /api/auth/logout` | Sign out |
+| `GET /api/auth/me` | Get the signed-in account |
+| `GET /api/recipes` | List your recipes |
+| `POST /api/recipes` | Add a recipe |
+| `GET /api/recipes/:id` | Read one of your recipes |
+| `PUT /api/recipes/:id` | Update one of your recipes |
+| `DELETE /api/recipes/:id` | Delete one of your recipes |
 
-To try the protected route, run `npm run token` and copy the resulting token. Then run:
+A recipe request uses `title` (1–120 characters), `ingredients` (1–50 nonempty strings), `instructions` (1–5000 characters), and optional `notes` (up to 1000 characters). Recipe lookups include the account ID so another account cannot read or change them. Passwords are hashed with bcrypt. The older demo routes remain at `/api/hello`, `/api/users`, and `/api/me`; `npm run token` is only for the Day 2 sample route.
 
-```sh
-curl -i http://localhost:3000/api/me -H 'Authorization: Bearer YOUR_TOKEN_HERE'
-```
+## Deploy to Vercel
 
-That request returns 200 with Alex's sample profile. A tampered or expired token returns 401. `npm run token` is a teaching shortcut: it creates a 15-minute token for sample user 1 without checking a password. It is not a login system. Never put the token or your secret in GitHub.
+Import this GitHub repository into Vercel as a Node.js project. The exported Express app in `server.js` and static files in `public/` are the entry points. Add `MONGODB_URI`, `MONGODB_DB`, and a new production `JWT_SECRET` in Vercel Project Settings → Environment Variables, then deploy. Ensure Atlas Network Access permits connections from the deployment environment. Do not upload `.env` or paste its values into GitHub.
 
-## How it works
+The local app and database are working. A public Vercel deployment is a separate step and should be checked after configuration: load the site, create an account, save a recipe, and reload.
 
-`server.js` starts Express on port 3000 by default and registers the routes. `app.get` handles a GET request at a path; `req` contains request details; `res` sends a response; and `app.listen` starts accepting requests. `routes/users.js` handles user HTTP requests. The `:id` value is available as `req.params.id`. `services/userService.js` looks up users in the temporary array. `res.json` sends a JSON response. `middleware/auth.js` checks the JWT signature, algorithm, and expiration before `/api/me` returns a profile.
+## Day 3 workflow
 
-The request path for a user lookup is: client → `server.js` → `routes/users.js` → `services/userService.js` → JSON response. The frontend and database concepts in the slides are future steps; this project currently has no UI or persistent data.
+The review found that recipe access must be scoped to the signed-in account and that wrong-type optional fields should be rejected. `AGENTS.md` records those API rules; the notes validation and its test apply them. `npm test`, the Atlas smoke test, and a browser walkthrough cover the review and testing exercise. The MCP exercise is documented in `DAY3-MCP.md`.
