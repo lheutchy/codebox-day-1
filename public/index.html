@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf7f0" />
+    <title>Recipe Box — recipes worth keeping</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Recipe Box home">
+        <span class="brand-mark" aria-hidden="true">✳</span>
+        <span>recipe<span class="brand-accent">box</span></span>
+      </a>
+      <div id="account-nav" class="account-nav" hidden>
+        <span id="account-email" class="account-email"></span>
+        <button id="logout-button" class="button button-quiet" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="auth-view" class="auth-layout" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="eyebrow">YOUR PERSONAL COOKBOOK</div>
+          <h1 id="hero-title">Recipes worth<br /><em>keeping.</em></h1>
+          <p>Save your favorites. Find them when you need them.</p>
+        </div>
+        <div class="auth-card">
+          <h2 id="auth-heading">Sign in</h2>
+          <div class="auth-tabs" role="group" aria-label="Account action">
+            <button id="login-tab" class="auth-tab is-active" type="button" aria-pressed="true">Sign in</button>
+            <button id="register-tab" class="auth-tab" type="button" aria-pressed="false">Create account</button>
+          </div>
+          <form id="auth-form" novalidate>
+            <label for="auth-email">Email address</label>
+            <input id="auth-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+            <label for="auth-password">Password</label>
+            <input id="auth-password" name="password" type="password" autocomplete="current-password" placeholder="At least 8 characters" minlength="8" required />
+            <p id="auth-error" class="form-error" role="alert" hidden></p>
+            <button id="auth-submit" class="button button-primary button-full" type="submit">Sign in <span aria-hidden="true">↗</span></button>
+          </form>
+        </div>
+      </section>
+
+      <section id="recipes-view" class="recipes-view" aria-labelledby="recipes-heading" hidden>
+        <div class="dashboard-intro">
+          <div>
+            <div class="eyebrow">YOUR COLLECTION</div>
+            <h1 id="recipes-heading">Your recipes<span class="period">.</span></h1>
+          </div>
+          <button id="new-recipe-button" class="button button-primary" type="button"><span aria-hidden="true">＋</span> Add a recipe</button>
+        </div>
+        <div class="dashboard-toolbar">
+          <div id="recipe-count" class="recipe-count" aria-live="polite"></div>
+          <label class="search-field" for="recipe-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="recipe-search" type="search" placeholder="Find a recipe or ingredient" autocomplete="off" />
+          </label>
+        </div>
+        <p id="list-error" class="page-error" role="alert" hidden></p>
+        <div id="loading-state" class="loading-state" role="status">Opening your recipe box…</div>
+        <div id="recipe-grid" class="recipe-grid" hidden></div>
+        <div id="empty-state" class="empty-state" hidden>
+          <span class="empty-icon" aria-hidden="true">✳</span>
+          <h2 id="empty-heading">No recipes yet.</h2>
+          <p id="empty-description">Add your first recipe.</p>
+          <button id="empty-add-button" class="button button-outline" type="button">Add your first recipe</button>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="recipe-dialog" class="dialog recipe-dialog" aria-labelledby="recipe-dialog-title">
+      <form id="recipe-form" novalidate>
+        <div class="dialog-heading">
+          <div>
+            <h2 id="recipe-dialog-title">New recipe</h2>
+          </div>
+          <button id="close-recipe-dialog" class="icon-button" type="button" aria-label="Close recipe form">×</button>
+        </div>
+        <label for="recipe-title">Recipe name</label>
+        <input id="recipe-title" name="title" type="text" maxlength="120" placeholder="e.g. Sunday lemon pasta" required />
+        <label for="recipe-ingredients">Ingredients <span class="label-hint">one per line</span></label>
+        <textarea id="recipe-ingredients" name="ingredients" rows="5" placeholder="2 lemons&#10;250 g pasta&#10;A little parmesan" required></textarea>
+        <label for="recipe-instructions">How to make it</label>
+        <textarea id="recipe-instructions" name="instructions" rows="6" placeholder="Write the steps you want to remember..." required></textarea>
+        <label for="recipe-notes">Notes <span class="label-hint">optional</span></label>
+        <textarea id="recipe-notes" name="notes" rows="3" maxlength="1000" placeholder="A tweak for next time, who loved it, or when to serve it"></textarea>
+        <p id="recipe-error" class="form-error" role="alert" hidden></p>
+        <div class="dialog-actions">
+          <button id="cancel-recipe-button" class="button button-quiet" type="button">Cancel</button>
+          <button id="save-recipe-button" class="button button-primary" type="submit">Save recipe</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="detail-dialog" class="dialog detail-dialog" aria-labelledby="detail-title">
+      <div class="dialog-heading">
+        <div>
+          <h2 id="detail-title"></h2>
+        </div>
+        <button id="close-detail-dialog" class="icon-button" type="button" aria-label="Close recipe details">×</button>
+      </div>
+      <div class="detail-columns">
+        <div>
+          <h3>Ingredients</h3>
+          <ul id="detail-ingredients" class="ingredient-list"></ul>
+        </div>
+        <div>
+          <h3>Method</h3>
+          <p id="detail-instructions" class="detail-text"></p>
+          <div id="detail-notes-block" hidden>
+            <h3>Kitchen notes</h3>
+            <p id="detail-notes" class="detail-text"></p>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-actions detail-actions">
+        <button id="delete-recipe-button" class="button button-danger" type="button">Delete</button>
+        <button id="edit-recipe-button" class="button button-primary" type="button">Edit recipe</button>
+      </div>
+    </dialog>
+
+    <dialog id="delete-dialog" class="dialog confirm-dialog" aria-labelledby="delete-title">
+      <h2 id="delete-title">Delete this recipe?</h2>
+      <p>This cannot be undone.</p>
+      <p id="delete-error" class="form-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button id="cancel-delete-button" class="button button-quiet" type="button">Keep it</button>
+        <button id="confirm-delete-button" class="button button-danger-solid" type="button">Delete recipe</button>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <footer class="site-footer"><span>RECIPE BOX ✳</span></footer>
+  </body>
+</html>

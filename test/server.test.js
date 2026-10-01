@@ -18,10 +18,14 @@ after(async () => {
   await new Promise((resolve) => server.close(resolve));
 });
 
-test("homepage and user routes keep their expected responses", async () => {
+test("website and Day 2 sample routes respond", async () => {
   const home = await fetch(`${baseUrl}/`);
   assert.equal(home.status, 200);
-  assert.equal(await home.text(), "Hello from CodeBox!");
+  assert.match(await home.text(), /Recipe Box/);
+
+  const hello = await fetch(`${baseUrl}/api/hello`);
+  assert.equal(hello.status, 200);
+  assert.equal(await hello.text(), "Hello from CodeBox!");
 
   const all = await fetch(`${baseUrl}/api/users`);
   assert.equal(all.status, 200);
@@ -37,6 +41,12 @@ test("homepage and user routes keep their expected responses", async () => {
   const missing = await fetch(`${baseUrl}/api/users/999`);
   assert.equal(missing.status, 404);
   assert.deepEqual(await missing.json(), { error: "User not found" });
+});
+
+test("recipe routes require a signed-in account", async () => {
+  const response = await fetch(`${baseUrl}/api/recipes`);
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: "Please sign in." });
 });
 
 test("protected route accepts only a valid, unexpired HS256 token", async () => {
